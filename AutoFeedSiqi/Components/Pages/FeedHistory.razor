@@ -1,0 +1,113 @@
+﻿@page "/feed-history"
+@attribute [StreamRendering]
+@using AutoFeedSiqi.Models.CommonComponents.Model
+
+<PageTitle>发种记录</PageTitle>
+
+<Table TItem="Feed" AutoGenerateColumns="true" class="table-demo"
+	   IsPagination="true" PageItemsSource="PageItemsSource" PageItems=10
+	   ShowColumnList="true"
+	   IsStriped="true" IsBordered="true" ShowSkeleton="true" IsMultipleSelect="true" AllowResizing="true" HeaderStyle="TableHeaderStyle.Light"
+	   ShowToolbar="@(string.Equals(MainLayout.Configuration.Token, "siqi2025"))"
+	   ShowSearch="true" ShowSearchText="true" ShowResetButton="true" ShowAdvancedSearch="false" SearchDialogIsDraggable="true" SearchDialogShowMaximizeButton="true"
+	   SearchModel="@Feed" SearchMode="SearchMode.Popup" ShowEmpty="true"
+	   ShowAdvancedSort="true"
+	   ShowExportButton="true" ShowExportCsvButton="true"
+	   ShowExtendButtons="false" IsExtendButtonsInRowHeader="true" ShowLoadingInFirstRender="true"
+	   IsKeepSelectedRows="true" IsKeepSelectedRowAfterAdd="true" ClickToSelect="true" ShowCheckboxText="false"
+	   AddModalTitle="新建" EditModalTitle="编辑"
+	   IsAutoRefresh="@IsAutoRefresh" AutoRefreshInterval="1000" IsExcel="false"
+	   OnQueryAsync="@OnQueryAsync" OnAddAsync="@OnAddAsync" OnSaveAsync="@OnSaveAsync" OnDeleteAsync="@OnDeleteAsync">
+	<TableToolbarTemplate>
+		@if (string.Equals(MainLayout.Configuration.Token, "siqi2025"))
+		{
+			<TableToolbarComponent TItem="Feed">
+				<ButtonUpload TValue="string" ShowUploadFileList="true"
+							  IsMultiple="false" IsDirectory="false" IsDisabled="false"
+							  ShowProgress="true" ShowDownloadButton="false"
+							  OnChange="@OnClickToUpload" BrowserButtonText="上传Excel" />
+				<ButtonUpload TValue="string" ShowUploadFileList="true"
+							  IsMultiple="true" IsDirectory="false" IsDisabled="false"
+							  ShowProgress="true" ShowDownloadButton="false"
+							  OnChange="@OnClickToUploadPreviews" BrowserButtonText="上传截图" DisplayText="选择一个或者多个文件" />
+				<Message @ref="Message" Placement="Placement.TopCenter" />
+			</TableToolbarComponent>
+			<TableToolbarButton TItem="Feed" IsAsync="true" Icon="bi bi-cloud-upload"
+								TooltipText="多选，即可批量发种"
+								IsEnableWhenSelectedOneRow="false" Text="发种" OnClickCallback="@FeedPtSiqiOnClick" Color="BootstrapBlazor.Components.Color.Primary" />
+			@if (@IsAutoRefresh)
+			{
+				<TableToolbarButton Text="自动刷新已开始" TooltipText="点击，切换自动刷新" OnClick="@ToggleAuto" Color="BootstrapBlazor.Components.Color.Primary" />
+			}
+			else
+			{
+				<TableToolbarButton Text="自动刷新已暂停" TooltipText="点击，切换自动刷新" OnClick="@ToggleAuto" Color="BootstrapBlazor.Components.Color.Info" />
+			}
+		}
+	</TableToolbarTemplate>
+	<TableColumns>
+		<TableColumn @bind-Field="@context.Id" Readonly="true" IsVisibleWhenAdd="false" IsVisibleWhenEdit="false" Align="Alignment.Center" Searchable="true" Filterable="false" Sortable="true">
+		</TableColumn>
+		<TableColumn @bind-Field="@context.SiqiId" Readonly="true" IsVisibleWhenAdd="false" IsVisibleWhenEdit="false" Align="Alignment.Center" Searchable="true" Filterable="false" Sortable="true">
+			<Template Context="value">
+				<LinkButton Url="@GetSiqiIdUrl(@value.Value)" TooltipText="打开思齐">
+					<div>
+						<ImageViewer Url="favicon.ico" FitMode="ObjectFitMode.Fill" Alt="图片" style="width:50%;display: block;margin: 0 auto;" />
+						<div>@(value.Value == 0 ? "未发种" : value.Value)</div>
+					</div>
+				</LinkButton>
+			</Template>
+		</TableColumn>
+		<TableColumn @bind-Field="@context.Title" Searchable="true" Filterable="true" Sortable="true">
+			<Template Context="value">
+				<div class="d-flex">
+					<div>
+						@if (@GetPreviewUrl(@value.Row.PreviewUrl) != string.Empty)
+						{
+							<img src="@GetPreviewUrl(@value.Row.PreviewUrl)" class="bb-avatar" height="40" />
+						}
+					</div>
+					<div class="ps-2">
+						<div style="font-weight: bold;font-size:medium">@value.Value@((value.Row.Date != DateTime.UnixEpoch && value.Row.Date != DateTime.MinValue) ? (" (" + (value.Row.Date.ToString("yyyy")) + ")") : "")</div>
+						<div class="bb-sub">@value.Row.Authors</div>
+					</div>
+				</div>
+			</Template>
+		</TableColumn>
+		<TableColumn @bind-Field="@context.Isbn" Visible="false" PlaceHolder="可不填，如填写，ISBN长度应为10位或13位" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Authors" Visible="false" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Press" Visible="true" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.DoubanId" Visible="false" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Date" FormatString="yyyy-MM" Visible="false" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Summary" Visible="true" Searchable="true" Filterable="true" Sortable="true" ShowHeaderTooltip="true" HeaderTextEllipsis="true" TextEllipsis="true" ShowTips="true">
+		</TableColumn>
+		<TableColumn @bind-Field="@context.Type" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Sort" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Source" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Condition" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Color" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Extension" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Language" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Quality" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.Team" Searchable="true" Filterable="true" Sortable="true" IsVisibleWhenAdd="false" IsVisibleWhenEdit="false" />
+		<TableColumn @bind-Field="@context.PreviewUrl" Visible="false" IsVisibleWhenAdd="false" IsVisibleWhenEdit="false" Sortable="true" ShowHeaderTooltip="true" HeaderTextEllipsis="true" TextEllipsis="true" ShowTips="true" />
+		<TableColumn @bind-Field="@context.Path" Visible="false" Searchable="true" Filterable="true" Sortable="true" ShowHeaderTooltip="true" HeaderTextEllipsis="true" TextEllipsis="true" ShowTips="true" />
+		<TableColumn @bind-Field="@context.Task" Readonly="true" Text="进度" IsVisibleWhenAdd="false" IsVisibleWhenEdit="false" Align="Alignment.Center" Searchable="true" Filterable="true" Sortable="true">
+			<Template Context="value">
+				<div class="w-100">
+					<div style="align-self:center">@value.Row.Task.ToDisplayName()</div>
+					<BootstrapBlazor.Components.Progress IsShowValue="true" Value="@((@value.Row.Task == FeedTask.Seed && @value.Row.TaskState == true) ? 100 : GetPercentage(@value.Row.Task))" Color="BootstrapBlazor.Components.Color.Success" IsAnimated="true" IsStriped="true"></BootstrapBlazor.Components.Progress>
+					@* <Circle Width="45" Value="100" Color="BootstrapBlazor.Components.Color.Success" StrokeWidth="2" ShowProgress="true">
+						@value.Row.Task.ToDisplayName()
+					</Circle> *@
+				</div>
+			</Template>
+		</TableColumn>
+		<TableColumn @bind-Field="@context.TaskState" Readonly="true" Visible="false" IsVisibleWhenAdd="false" IsVisibleWhenEdit="false" Searchable="true" Filterable="true" Sortable="true" />
+		<TableColumn @bind-Field="@context.CreateAt" Readonly="true" IsVisibleWhenAdd="false" IsVisibleWhenEdit="false" Searchable="true" Filterable="true" Sortable="true" ShowHeaderTooltip="true" HeaderTextEllipsis="true" TextEllipsis="true" ShowTips="true" />
+		<TableColumn @bind-Field="@context.LastUpdatedAt" Readonly="true" IsVisibleWhenAdd="false" IsVisibleWhenEdit="false" Searchable="true" Filterable="true" Sortable="true" ShowHeaderTooltip="true" HeaderTextEllipsis="true" TextEllipsis="true" ShowTips="true" />
+	</TableColumns>
+	<RowButtonTemplate>
+		<TableCellPopConfirmButton Color="BootstrapBlazor.Components.Color.Warning" Icon="bi bi-cloud-upload" Text="发种" OnConfirm="@(() => OnRowButtonClick(context, "发种"))" />
+	</RowButtonTemplate>
+</Table>

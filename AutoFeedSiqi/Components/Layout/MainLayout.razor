@@ -1,0 +1,44 @@
+﻿@using BootstrapBlazor.Components
+@inherits LayoutComponentBase
+
+<BootstrapBlazorRoot>
+	<Layout ShowGotoTop="true" ShowCollapseBar="true" ShowFooter="@ShowFooter" SideWidth="0"
+			IsPage="true" IsFullSide="@IsFullSide" IsFixedHeader="@IsFixedHeader" IsFixedFooter="@IsFixedFooter"
+			ShowSplitBar="true" SidebarMinWidth="200" SidebarMaxWidth="350"
+			TabStyle="TabStyle.Chrome" ShowToolbar="true" ShowTabContextMenu="true"
+			ShowTabInHeader="@ShowTabInHeader" ShowTabExtendButtons="false"
+			TabDefaultUrl="/" UseTabSet="@UseTabSet" IsFixedTabHeader="IsFixedTabHeader"
+			AdditionalAssemblies="new[] { GetType().Assembly }"
+			Menus="@Menus" class="@Theme">
+		<Header>
+			<div class="layout-drawer" @onclick="@NoRenderShowEditDialog" title="当前身份：@GetIdentityVerification()"><i class="fa fa-gears"></i></div>
+			<Message @ref="Message" Placement="Placement.Bottom" />
+			<ThemeProvider></ThemeProvider>
+		</Header>
+		<Side>
+			<div class="layout-banner">
+				<img class="layout-logo" src="../images/logo.png" />
+				<div class="layout-title">
+					<span>发种思齐</span>
+				</div>
+			</div>
+		</Side>
+		<Main>
+			<CascadingValue Value="this" IsFixed="true">
+				@Body
+			</CascadingValue>
+		</Main>
+		<Footer>
+			<div class="text-center flex-fill">
+				@* <a class="page-layout-demo-footer-link" href="https://pro.blazor.zone/" target="_blank">Bootstrap Admin</a> *@
+				版本：@GetVersion()
+			</div>
+		</Footer>
+	</Layout>
+</BootstrapBlazorRoot>
+
+<div id="blazor-error-ui">
+	An unhandled error has occurred.
+	<a href="" class="reload">Reload</a>
+	<a class="dismiss">🗙</a>
+</div>

@@ -1,0 +1,38 @@
+﻿@inject IHostEnvironment Env
+@inject IStringLocalizer<App> Localizer
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme='light'>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="keywords" content="bootstrap,blazor,wasm,webassembly,UI,netcore,web,assembly,pt,siqi">
+    <meta name="description" content="提供思齐PT站以下功能：自动获取PDF截图、自动上传图床获得链接、自动上传NFO信息、自动制种、自动上传发布数据库内容到思齐PT站。">
+    <meta name="author" content="yxlonger" />
+    <base href="/" />
+
+    <link rel="stylesheet" href="@Assets["_content/BootstrapBlazor.FontAwesome/css/font-awesome.min.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/BootstrapBlazor/css/bootstrap.blazor.bundle.min.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/BootstrapBlazor/css/motronic.min.css"]" />
+    <link rel="stylesheet" href="@Assets["_content/BootstrapBlazor.BootstrapIcon/css/bootstrap.min.css"]">
+    <link rel="stylesheet" href="@Assets["AutoFeedSiqi.styles.css"]" />
+    <link rel="stylesheet" href="@Assets["css/app.css"]" />
+    <ImportMap />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <title>思齐自动发种程序</title>
+    <HeadOutlet @rendermode="new InteractiveServerRenderMode(false)" />
+</head>
+
+<body>
+    <Routes @rendermode="new InteractiveServerRenderMode(false)" />
+
+    <ReconnectorOutlet ReconnectInterval="5000" @rendermode="new InteractiveServerRenderMode(false)" />
+
+    <script src="@Assets["_content/BootstrapBlazor/js/bootstrap.blazor.bundle.min.js"]"></script>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
