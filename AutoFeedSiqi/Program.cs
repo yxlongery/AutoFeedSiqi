@@ -1,6 +1,8 @@
 using AutoFeedSiqi.Components;
 using AutoFeedSiqi.Models.CommonComponents;
+using AutoFeedSiqi.Models.CommonComponents.Model;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.ConfigureLog();
 builder.Services.AddControllers();
 builder.Services.AddBootstrapBlazor();
-// ���� Table Excel ��������
+// ���� Table Excel ��������
 builder.Services.AddBootstrapBlazorTableExportService();
 
 // Add services to the container.
@@ -16,6 +18,21 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
+
+//数据库：无库自动建库建表（EF迁移），空表自动种子一行默认配置
+Directory.CreateDirectory("data");
+using (var db = DatabaseUtil.PooledDbContextFactory.CreateDbContext())
+{
+    Log.Information("【数据库迁移开始】...");
+    db.Database.Migrate();
+    Log.Information("【数据库迁移完成】");
+    if (!db.Configurations.Any())
+    {
+        db.Configurations.Add(new Configuration());
+        db.SaveChanges();
+        Log.Information("【已种子默认配置行】");
+    }
+}
 
 #region UseSerilogRequestLogging
 app.UseSerilogRequestLogging(options =>
