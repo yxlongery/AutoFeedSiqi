@@ -252,7 +252,7 @@ if [ "$REBUILD" = 1 ]; then
     log "    $arch 依赖基线大小: $(du -sh "$STAGING/cleanbase-$arch" | cut -f1)"
   done
   log "    [操作] 经 ssh 覆盖 NAS base（旧 base 备份为 base.bak）"
-  ssh "$NAS_HOST" "cd $NAS_APP_PATH/Dockerfile && rm -rf base.bak && mv base base.bak && mkdir -p base/amd64 base/arm64"
+  ssh "$NAS_HOST" "cd $NAS_APP_PATH/Dockerfile && rm -rf base.bak && { [ -d base ] && mv base base.bak || true; } && mkdir -p base/amd64 base/arm64"
   for entry in $RID_ARCHS; do
     arch="${entry%%:*}"
     tar czf - -C "$STAGING/cleanbase-$arch" . | ssh "$NAS_HOST" "tar xzf - -C $NAS_APP_PATH/Dockerfile/base/$arch"
