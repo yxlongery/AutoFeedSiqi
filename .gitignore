@@ -362,3 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /AutoFeedSiqi/data
+# NAS 部署过程目录（日志与 base 指纹缓存，不进 git）
+.deploy-logs/
+.deploy-cache/

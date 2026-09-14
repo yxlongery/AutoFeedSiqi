@@ -4,7 +4,6 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Version>1.2.8.1</Version>
 		<ApplicationIcon>favicon.ico</ApplicationIcon>
 		<Description>提供思齐PT站以下功能：自动获取PDF截图、自动上传图床获得链接、自动上传NFO信息、自动制种、自动上传发布数据库内容到思齐PT站。</Description>
 		<Copyright>Copyright yxlonger ©2025 </Copyright>

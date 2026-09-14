@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/main/src/NerdBank.GitVersioning/version.schema.json",
+  "version": "1.2",
+  "publicReleaseRefSpec": [
+    "^refs/tags/v\\d+\\.\\d+.+"
+  ],
+  "pathFilters": [
+    ":!.learnings",
+    ":!learnings",
+    ":!.opencode",
+    ":!AGENTS.md",
+    ":!README.md"
+  ]
+}

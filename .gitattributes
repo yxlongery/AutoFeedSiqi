@@ -4,6 +4,17 @@
 * text=auto
 
 ###############################################################################
+# 行尾规则（参照 AutoFeedEmby）：源码保持 CRLF，Linux 端执行/构建文件保持 LF。
+###############################################################################
+*.cs      text eol=crlf
+*.razor   text eol=crlf
+*.json    text eol=crlf
+*.csproj  text eol=crlf
+*.slnx    text eol=crlf
+*.sh      text eol=lf
+Dockerfile text eol=lf
+
+###############################################################################
 # Set default behavior for command prompt diff.
 #
 # This is need for earlier builds of msysgit that does not have it on by
