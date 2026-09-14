@@ -327,6 +327,7 @@ namespace AutoFeedSiqi.Models
                 lskyToken = await CreateIskyToken(client, lskyEmail, lskyPassword);
                 //UpdateIskyTokenToAppsetting(lskyToken);
                 UpdateIskyTokenToDatabase(lskyToken);
+                Configuration.IskyToken = lskyToken;
             }
             var ptSiqiPaths = new PtSiqiPaths() { Data = [] };
 
@@ -373,7 +374,7 @@ namespace AutoFeedSiqi.Models
                 return $"Bearer {lskyToken}";
             }
 
-            static async Task<string> Upload(RestClient client, string path, string lskyToken, Feed feed)
+            static async Task<string> Upload(RestClient client, string path, string lskyToken, Feed feed, bool retried = false)
             {
                 //创建请求
                 var request = new RestRequest("upload", Method.Post);
@@ -386,6 +387,18 @@ namespace AutoFeedSiqi.Models
                 request.AddFile("file", path);
                 //执行请求
                 var response = await client.ExecuteAsync(request);
+                //token失效自动重登一次：旧token归属旧号或已过期时，用当前邮箱密码换新token并重试，仅一次防循环
+                if (!retried && IsIskyUnauthorized(response))
+                {
+                    var newToken = await CreateIskyToken(client, Configuration.IskyEmail, Configuration.IskyPassword);
+                    if (!string.IsNullOrWhiteSpace(newToken) && newToken != "Bearer ")
+                    {
+                        UpdateIskyTokenToDatabase(newToken);
+                        Configuration.IskyToken = newToken;
+                        Log.Information("IskyToken失效已重登，重试上传! path：{path}", path);
+                        return await Upload(client, path, newToken, feed, true);
+                    }
+                }
                 var responseContent = response.Content ?? string.Empty;
                 //解析返回结果
                 Log.Information($@"上传预览图! path：{{{nameof(path)}}}；responseContent：{{{nameof(responseContent)}}}", path, responseContent);
@@ -396,6 +409,17 @@ namespace AutoFeedSiqi.Models
                 //获得url后，去掉前面的host部分，只保留路径部分
                 url = new Uri(url).PathAndQuery;
                 return url;
+            }
+
+            //判定图床token是否失效：401为主，返回体明确未鉴权为辅，宁可漏判不误判
+            static bool IsIskyUnauthorized(RestResponse response)
+            {
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    return true;
+                }
+                var content = response.Content ?? string.Empty;
+                return content.Contains("\"status\":false") && (content.Contains("Unauthenticated") || content.Contains("未授权") || content.Contains("登录过期"));
             }
 
             static void UpdateIskyTokenToAppsetting(string lskyToken)
@@ -443,6 +467,7 @@ namespace AutoFeedSiqi.Models
             foreach (var path in paths)
             {
                 await CoreAsync(lskyToken, feed, path, client, context, ptSiqiPaths);
+                lskyToken = Configuration.IskyToken;
             }
             return ptSiqiPathsOutput ?? new PtSiqiPaths();
         }

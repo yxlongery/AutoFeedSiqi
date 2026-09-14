@@ -3,6 +3,7 @@ using AutoFeedSiqi.Models.CommonComponents.Model;
 using BootstrapBlazor.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 
 namespace AutoFeedSiqi.Components.Layout
@@ -115,7 +116,14 @@ namespace AutoFeedSiqi.Components.Layout
                 OnEditAsync = async context =>
                 {
                     using var contextDatabase = DatabaseUtil.PooledDbContextFactory.CreateDbContext();
-                    contextDatabase.Configurations.Update((Configuration)context.Model);
+                    var model = (Configuration)context.Model;
+                    //换号清token：邮箱或密码变了，旧token归属旧号，清空后下次上传自动用新号重登
+                    var old = contextDatabase.Configurations.AsNoTracking().FirstOrDefault(c => c.Id == model.Id);
+                    if (old != null && (old.IskyEmail != model.IskyEmail || old.IskyPassword != model.IskyPassword))
+                    {
+                        model.IskyToken = string.Empty;
+                    }
+                    contextDatabase.Configurations.Update(model);
                     contextDatabase.SaveChanges();
 
                     await MessageService.Show(new()
